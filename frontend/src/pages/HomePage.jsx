@@ -20,7 +20,7 @@ export const HomePage = () => {
 
       const data = await response.json();
       setUser(data);
-    } catch (err) {
+    } catch (error) {
       setError("Error al obtener el perfil");
     }
   };
