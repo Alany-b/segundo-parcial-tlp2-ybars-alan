@@ -63,12 +63,15 @@ export const LoginPage = () => {
         </h2>
 
         {/* TODO: Mostrar este div cuando haya error */}
-        <div className="hidden bg-red-100 text-red-700 p-3 rounded mb-4">
-          <p className="text-sm">
+{error && (
+        <div  className="hidden bg-red-100 text-red-700 p-3 rounded mb-4">
+          <p className="text-sm"> {error}
             Credenciales incorrectas. Intenta nuevamente.
           </p>
         </div>
+      )}
 
+        
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label
