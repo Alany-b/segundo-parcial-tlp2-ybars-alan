@@ -54,7 +54,7 @@ const handleLogout = async () => {
 
         <div className="hidden md:flex items-center space-x-6">
           <span className="text-gray-300">
-            Bienvenido,{" "}
+            Bienvenido,{}
             <span className="font-semibold text-white">{userName}</span>
           </span>
 
