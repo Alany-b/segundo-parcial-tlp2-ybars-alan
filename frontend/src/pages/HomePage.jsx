@@ -1,51 +1,68 @@
-import { useForm } from "../hooks/useForm";
-
+import { useEffect, useState } from "react";
 
 export const HomePage = () => {
   // TODO: Integrar lógica para obtener superhéroes desde la API
   // TODO: Implementar useState para almacenar la lista de superhéroes
   // TODO: Implementar función para recargar superhéroes
-const { Form, handleReset } = useForm();
+  const [user, setUser] = useState(null);
+  const [superheroes, setSuperheroes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [reloading, setReloading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Datos de ejemplo para las cards
-  const superheroes = [
-    {
-      id: 1,
-      superhero: "Superman",
-      image:
-        "https://cdn.jsdelivr.net/gh/akabab/superhero-api@0.3.0/api/images/lg/644-superman.jpg",
-    },
-    {
-      id: 2,
-      superhero: "Batman",
-      image:
-        "https://cdn.jsdelivr.net/gh/akabab/superhero-api@0.3.0/api/images/lg/70-batman.jpg",
-    },
-    {
-      id: 3,
-      superhero: "Wonder Woman",
-      image:
-        "https://cdn.jsdelivr.net/gh/akabab/superhero-api@0.3.0/api/images/lg/720-wonder-woman.jpg",
-    },
-    {
-      id: 4,
-      superhero: "Spider-Man",
-      image:
-        "https://cdn.jsdelivr.net/gh/akabab/superhero-api@0.3.0/api/images/lg/620-spider-man.jpg",
-    },
-    {
-      id: 5,
-      superhero: "Iron Man",
-      image:
-        "https://cdn.jsdelivr.net/gh/akabab/superhero-api@0.3.0/api/images/lg/346-iron-man.jpg",
-    },
-    {
-      id: 6,
-      superhero: "Captain America",
-      image:
-        "https://cdn.jsdelivr.net/gh/akabab/superhero-api@0.3.0/api/images/lg/149-captain-america.jpg",
-    },
-  ];
+  const fetchProfile = async () => {
+    try {
+      const response = await fetch("http://localhost:3000/api/profile", {
+        credentials: "include",
+      });
+
+      if (!response.ok) throw new Error("No autorizado");
+
+      const data = await response.json();
+      setUser(data);
+    } catch (err) {
+      setError("Error al obtener el perfil");
+    }
+  };
+
+  const fetchSuperheroes = async () => {
+    try {
+      const response = await fetch("http://localhost:3000/api/superheroes", {
+        credentials: "include",
+      });
+
+      if (!response.ok) throw new Error("No se pudieron cargar los datos");
+
+      const data = await response.json();
+      setSuperheroes(data.data || []);
+    } catch (err) {
+      setError("Error al cargar superhéroes");
+    }
+  };
+
+  const reloadSuperheroes = async () => {
+    setReloading(true);
+    await fetchSuperheroes();
+    setReloading(false);
+  };
+
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      await fetchProfile();
+      await fetchSuperheroes();
+      setLoading(false);
+    };
+    loadData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen text-xl font-semibold">
+        Cargando...
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 pb-8">
@@ -55,35 +72,45 @@ const { Form, handleReset } = useForm();
 
       <div className="flex justify-center mb-8">
         <button
-          onClick={() => {
-            // TODO: Implementar función para recargar superhéroes
-            handleReset();
-          }}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded transition-colors"
+          onClick={reloadSuperheroes}
+          disabled={reloading}
+          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded transition-colors disabled:opacity-50"
         >
-          Recargar
+          {reloading ? "Recargando..." : "Recargar"}
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {superheroes.map((hero) => (
-          <div
-            key={hero.id}
-            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer"
-          >
-            <img
-              src={hero.image}
-              alt={hero.superhero}
-              className="h-64 object-cover w-full"
-            />
+      {error && (
+        <div className="bg-red-100 text-red-700 p-4 rounded mb-4 text-center">
+          {error}
+        </div>
+      )}
 
-            <div className="p-4">
-              <h3 className="text-xl font-semibold text-gray-800">
-                {hero.superhero}
-              </h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {superheroes && superheroes.length > 0 ? (
+          superheroes.map((hero) => (
+            <div
+              key={hero.id}
+              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer"
+            >
+              <img
+                src={hero.image}
+                alt={hero.superhero}
+                className="h-64 object-cover w-full"
+              />
+
+              <div className="p-4">
+                <h3 className="text-xl font-semibold text-gray-800">
+                  {hero.superhero}
+                </h3>
+              </div>
             </div>
+          ))
+        ) : (
+          <div className="col-span-full text-center text-gray-500">
+            No hay superhéroes disponibles
           </div>
-        ))}
+        )}
       </div>
     </div>
   );
